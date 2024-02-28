@@ -9,4 +9,4 @@ aurs:
   container: aurs
   packages:
     - foo
-	- bar
+	  - bar
