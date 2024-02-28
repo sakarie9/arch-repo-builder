@@ -5,7 +5,8 @@ import fnmatch
 from .config import C, BASE_PATH
 from .utils import *
 
-makepkg_path = os.path.join(BASE_PATH, "makepkg_root")
+makepkg_path = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(__file__))), "makepkg_root")
+makepkg_config_path = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(__file__))), "makepkg.conf")
 
 def list_pkgbuilds():
     container_path = os.path.join(BASE_PATH, C.pkgbuilds.container)
@@ -35,17 +36,21 @@ def clone_aur_packages():
         container = os.path.join(BASE_PATH, C.aurs.container)
         url = f"https://aur.archlinux.org/{aur}.git"
 
+        if not os.path.exists(container):
+            os.makedirs(container)
+
         if not os.path.exists(os.path.join(container, aur)):
             subprocess.run(["git", "clone", "--depth=1", url], cwd=container)
 
 def copy_build_packages(path):
     package_name = ""
     package_full_path = ""
-    for file in os.listdir(path):
-        if fnmatch.fnmatch(file, "*.pkg.tar.zst"):
-            package_name = file
-            package_full_path = os.path.join(path, file)
-            break
+
+    files = os.listdir(path)
+    matched_pkgs = [f for f in files if fnmatch.fnmatch(f, "*.pkg.tar.zst") ]
+    sorted_pkgs = sorted(matched_pkgs, reverse=True)
+    package_name = sorted_pkgs[0]
+    package_full_path = os.path.join(path, sorted_pkgs[0])
     
     repo_path = get_repository_path(C.global_settings.repository)
 
@@ -118,13 +123,15 @@ def makepkg():
         
         if is_package_exist_in_db(pkgbuild):
             print(f"!!!{pkgbuild} skipped build and copy!")
+            continue
         elif is_package_been_built(pkgbuild):
             copy_build_packages(pkgbuild)
             print(f"!!!{pkgbuild} skipped build!")
+            continue
         else:
             # subprocess.run(["pkgctl", "build", "-w", "1", "--clean"], cwd=pkgbuild)
             # subprocess.run(["paru", "--build", "--chroot", "--skipreview", "--clean"], cwd=pkgbuild)
-            subprocess.run([makepkg_path, "--syncdeps", "--clean", "--noconfirm"], cwd=pkgbuild)
+            subprocess.run([makepkg_path, "--config", makepkg_config_path, "--syncdeps", "--clean", "--noconfirm"], cwd=pkgbuild)
             copy_build_packages(pkgbuild)
 
 

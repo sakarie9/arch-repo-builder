@@ -3,7 +3,7 @@ import os
 from dataclasses import dataclass, field
 from typing import List
 
-BASE_PATH = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+BASE_PATH = os.getcwd()
 CONFIG_PATH = os.path.join(BASE_PATH, "config.yaml")
 
 @dataclass
