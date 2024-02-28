@@ -1,0 +1,12 @@
+global-settings:
+  repository: repo/repo.db.tar.gz
+  packager: "Bob <bob@example.com>"
+
+pkgbuilds:
+  container: pkgbuilds
+
+aurs:
+  container: aurs
+  packages:
+    - foo
+	- bar
