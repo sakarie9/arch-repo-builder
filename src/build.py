@@ -7,6 +7,7 @@ from .utils import *
 
 makepkg_path = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(__file__))), "makepkg_root")
 makepkg_config_path = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(__file__))), "makepkg.conf")
+_db_pkgs = []
 
 def list_pkgbuilds():
     container_path = os.path.join(BASE_PATH, C.pkgbuilds.container)
@@ -88,6 +89,18 @@ def rebuild(pkgname):
     
     subprocess.run(["pkgctl", "build", "-w", "1", "--clean", "--rebuild"], cwd=rebuild_dir)
 
+def get_db_pkg_list():
+    if not _db_pkgs:
+        repo_db = os.path.join(BASE_PATH, C.global_settings.repository)
+        if os.path.isfile(repo_db):
+            result = subprocess.run(
+                "tar --exclude='*/*' -tf " + repo_db, 
+                check=True, stdout=subprocess.PIPE, shell=True
+                ).stdout.decode("utf-8")
+        _db_pkgs = [ f[:-1] for f in result.split("\n") if f != "" ]
+        print("!!!packages in db:\n{_db_pkgs}")
+    return _db_pkgs
+
 def is_package_exist_in_db(pkgbuild):
 
     # for git packages, update pkgver first
@@ -102,18 +115,12 @@ def is_package_exist_in_db(pkgbuild):
     pkg = '-'.join(
         (os.path.splitext(os.path.basename(result))[0].split('-'))[:-1]
         )
-    # print(pkg)
+
+    print("!!!{pkg} from PKGBUILD")
 
     # compare package basename to database
-    repo_db = os.path.join(BASE_PATH, C.global_settings.repository)
-    if os.path.isfile(repo_db):
-        result = subprocess.run(
-            "tar --exclude='*/*' -tf " + repo_db, 
-            check=True, stdout=subprocess.PIPE, shell=True
-            ).stdout.decode("utf-8")
-        packages_db = [ f[:-1] for f in result.split("\n") if f != "" ]
-        if pkg in packages_db:
-            return True
+    if pkg in get_db_pkg_list():
+        return True
 
     return False
 
