@@ -10,10 +10,14 @@ makepkg_config_path = os.path.join(os.path.abspath(os.path.dirname(os.path.dirna
 
 def list_pkgbuilds():
     container_path = os.path.join(BASE_PATH, C.pkgbuilds.container)
+    if not os.path.exists(container_path):
+        return []
     return os.listdir(container_path)
 
 def list_pkgbuilds_dir():
     container_path = os.path.join(BASE_PATH, C.pkgbuilds.container)
+    if not os.path.exists(container_path):
+        return []
     # pkgbuilds_paths = list(
     #     map(lambda path: os.path.join(BASE_PATH, path), 
     #         os.listdir(container_path))
@@ -49,8 +53,12 @@ def copy_build_packages(path):
     files = os.listdir(path)
     matched_pkgs = [f for f in files if fnmatch.fnmatch(f, "*.pkg.tar.zst") ]
     sorted_pkgs = sorted(matched_pkgs, reverse=True)
-    package_name = sorted_pkgs[0]
-    package_full_path = os.path.join(path, sorted_pkgs[0])
+    
+    if not sorted_pkgs:
+        print(f"!!!{os.path.basename(path)} build failed!")
+    else:
+        package_name = sorted_pkgs[0]
+        package_full_path = os.path.join(path, sorted_pkgs[0])
     
     repo_path = get_repository_path(C.global_settings.repository)
 
@@ -119,7 +127,10 @@ def is_package_been_built(pkgbuild):
 
 
 def makepkg():
-    for pkgbuild in list_pkgbuilds_dir() + list_aurs_dir():
+    packages_list = list_pkgbuilds_dir() + list_aurs_dir()
+    print(f"!!!Packages\n{packages_list}")
+    for pkgbuild in packages_list:
+        print(f"!!!Start build packages\n{pkgbuild}")
         
         if is_package_exist_in_db(pkgbuild):
             print(f"!!!{pkgbuild} skipped build and copy!")
