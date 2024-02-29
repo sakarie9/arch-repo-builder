@@ -90,6 +90,7 @@ def rebuild(pkgname):
     subprocess.run(["pkgctl", "build", "-w", "1", "--clean", "--rebuild"], cwd=rebuild_dir)
 
 def get_db_pkg_list():
+    global _db_pkgs
     if not _db_pkgs:
         repo_db = os.path.join(BASE_PATH, C.global_settings.repository)
         if os.path.isfile(repo_db):
