@@ -32,7 +32,10 @@ def list_pkgbuilds_dir():
 
 def list_aurs_dir():
     container_path = os.path.join(BASE_PATH, C.aurs.container)
-    subfolders = [ f.path for f in os.scandir(container_path) if f.is_dir() ]
+    # subfolders = [ f.path for f in os.scandir(container_path) if f.is_dir() ]
+
+    # use config to follow build order
+    subfolders = [ os.path.join(container_path, f) for f in C.aurs.packages if os.path.exists(os.path.join(container_path, f)) ]
     return subfolders
 
 def clone_aur_packages():
