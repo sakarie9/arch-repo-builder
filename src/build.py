@@ -112,7 +112,7 @@ def is_package_exist_in_db(pkgbuild):
 
     # extract package basename from PKGBUILD
     result = subprocess.run(
-        [makepkg_path, "--packagelist"], 
+        [makepkg_path, "--config", makepkg_config_path, "--packagelist"], 
         check=True, stdout=subprocess.PIPE, cwd=pkgbuild
         ).stdout.decode("utf-8")
     pkg = '-'.join(
