@@ -7,6 +7,8 @@ from .utils import *
 
 makepkg_path = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(__file__))), "makepkg_root")
 makepkg_config_path = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(__file__))), "makepkg.conf")
+print(f"!!!makepkg_path: {makepkg_path}")
+print(f"!!!makepkg_config_path: {makepkg_config_path}")
 _db_pkgs = []
 
 def list_pkgbuilds():
