@@ -145,7 +145,7 @@ def makepkg():
         else:
             # subprocess.run(["pkgctl", "build", "-w", "1", "--clean"], cwd=pkgbuild)
             # subprocess.run(["paru", "--build", "--chroot", "--skipreview", "--clean"], cwd=pkgbuild)
-            subprocess.run([makepkg_path, "--config", makepkg_config_path, "--syncdeps", "--clean", "--noconfirm"], cwd=pkgbuild)
+            subprocess.run([makepkg_path, "--config", makepkg_config_path, "--syncdeps", "--clean", "--noconfirm", "--install"], cwd=pkgbuild)
             copy_build_packages(pkgbuild)
 
 
