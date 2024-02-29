@@ -99,7 +99,7 @@ def get_db_pkg_list():
                 check=True, stdout=subprocess.PIPE, shell=True
                 ).stdout.decode("utf-8")
         _db_pkgs = [ f[:-1] for f in result.split("\n") if f != "" ]
-        print("!!!packages in db:\n{_db_pkgs}")
+        print(f"!!!packages in db:\n{_db_pkgs}")
     return _db_pkgs
 
 def is_package_exist_in_db(pkgbuild):
@@ -117,7 +117,7 @@ def is_package_exist_in_db(pkgbuild):
         (os.path.splitext(os.path.basename(result))[0].split('-'))[:-1]
         )
 
-    print("!!!{pkg} from PKGBUILD")
+    print(f"!!!{pkg} from PKGBUILD")
 
     # compare package basename to database
     if pkg in get_db_pkg_list():
