@@ -1,0 +1,9 @@
+name: Arch Repo Builder
+description: Build Arch Linux packages from PKGBUILDs and AUR 
+inputs:
+  command:
+    description: Command to run
+    required: true
+runs:
+  using: docker
+  image: Dockerfile
