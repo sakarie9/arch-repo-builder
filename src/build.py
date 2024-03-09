@@ -128,7 +128,7 @@ def is_package_exist_in_db(pkgbuild):
     if pkg in get_db_pkg_list():
 
         # if package exists in db, install it to meet dependency
-        pkgname = os.path.basename(result)
+        pkgname = os.path.basename(result).strip()
         install_package_from_db(pkgname)
 
         return True
@@ -139,7 +139,7 @@ def is_package_been_built(pkgbuild):
     result = subprocess.run(
     [makepkg_path, "--packagelist"], 
     check=True, stdout=subprocess.PIPE, cwd=pkgbuild
-    ).stdout.decode("utf-8").split("\n")[0]
+    ).stdout.decode("utf-8").strip()
     
     if os.path.isfile(result):
         return True
