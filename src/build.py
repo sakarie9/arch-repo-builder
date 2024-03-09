@@ -128,7 +128,8 @@ def is_package_exist_in_db(pkgbuild):
     if pkg in get_db_pkg_list():
 
         # if package exists in db, install it to meet dependency
-        pkgpath = os.path.join(BASE_PATH, C.global_settings.repository, os.path.basename(result))
+        pkgpath = os.path.join(BASE_PATH, os.path.dirname(C.global_settings.repository), os.path.basename(result))
+
         install_package_from_db(pkgpath)
 
         return True
