@@ -104,8 +104,8 @@ def get_db_pkg_list():
         print(f"!!!packages in db:\n{_db_pkgs}")
     return _db_pkgs
 
-def install_package_from_db(pkgpath):
-    subprocess.run(["pacman", "-U", "--noconfirm", pkgpath])
+def install_package_from_db(pkgname):
+    subprocess.run(["pacman", "-U", "--noconfirm", pkgname], cwd=get_repository_path(C.global_settings.repository))
 
 def is_package_exist_in_db(pkgbuild):
 
@@ -128,9 +128,8 @@ def is_package_exist_in_db(pkgbuild):
     if pkg in get_db_pkg_list():
 
         # if package exists in db, install it to meet dependency
-        pkgpath = os.path.join(get_repository_path(C.global_settings.repository), os.path.basename(result))
-
-        install_package_from_db(pkgpath)
+        pkgname = os.path.basename(result)
+        install_package_from_db(pkgname)
 
         return True
 
