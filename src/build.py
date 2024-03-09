@@ -104,6 +104,9 @@ def get_db_pkg_list():
         print(f"!!!packages in db:\n{_db_pkgs}")
     return _db_pkgs
 
+def install_package_from_db(pkgpath):
+    subprocess.run(["pacman", "-U", "--noconfirm", pkgpath])
+
 def is_package_exist_in_db(pkgbuild):
 
     # for git packages, update pkgver first
@@ -119,10 +122,15 @@ def is_package_exist_in_db(pkgbuild):
         (os.path.splitext(os.path.basename(result))[0].split('-'))[:-1]
         )
 
-    print(f"!!!{pkg} from PKGBUILD")
+    print(f"!!!{pkg} read from PKGBUILD")
 
     # compare package basename to database
     if pkg in get_db_pkg_list():
+
+        # if package exists in db, install it to meet dependency
+        pkgpath = os.path.join(C.global_settings.repository, os.path.basename(result))
+        install_package_from_db(pkgpath)
+
         return True
 
     return False
