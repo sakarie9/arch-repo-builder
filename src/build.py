@@ -4,12 +4,14 @@ import subprocess
 import fnmatch
 from .config import C, BASE_PATH
 from .utils import *
+from .model import BuildResult, ResultEnum
 
 makepkg_path = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(__file__))), "makepkg_root")
 makepkg_config_path = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(__file__))), "makepkg.conf")
 print(f"!!!makepkg_path: {makepkg_path}")
 print(f"!!!makepkg_config_path: {makepkg_config_path}")
 _db_pkgs = []
+build_results = []
 
 def list_pkgbuilds():
     container_path = os.path.join(BASE_PATH, C.pkgbuilds.container)
@@ -151,20 +153,28 @@ def makepkg():
     packages_list = list_pkgbuilds_dir() + list_aurs_dir()
     print(f"!!!Packages\n{packages_list}")
     for pkgbuild in packages_list:
-        print(f"!!!Start build packages\n{pkgbuild}")
+        pkgname = os.path.basename(pkgbuild)
+        print(f"!!!Start build packages {pkgname}")
         
         if is_package_exist_in_db(pkgbuild):
-            print(f"!!!{pkgbuild} skipped build and copy!")
+            print(f"!!!{pkgname} skipped build and copy!")
+            build_results.append(BuildResult(pkgname, ResultEnum.SKIP.value))
             continue
         elif is_package_been_built(pkgbuild):
             copy_build_packages(pkgbuild)
-            print(f"!!!{pkgbuild} skipped build!")
+            print(f"!!!{pkgname} skipped build!")
+            build_results.append(BuildResult(pkgname, ResultEnum.COPY.value))
             continue
         else:
             # subprocess.run(["pkgctl", "build", "-w", "1", "--clean"], cwd=pkgbuild)
             # subprocess.run(["paru", "--build", "--chroot", "--skipreview", "--clean"], cwd=pkgbuild)
-            subprocess.run([makepkg_path, "--config", makepkg_config_path, "--syncdeps", "--clean", "--noconfirm", "--install"], cwd=pkgbuild)
-            copy_build_packages(pkgbuild)
-
-
-
+            result = subprocess.run([makepkg_path, "--config", makepkg_config_path, "--syncdeps", "--clean", "--noconfirm", "--install"], cwd=pkgbuild)
+            if (result.returncode):
+                # return non 0, failed
+                build_results.append(BuildResult(pkgname, ResultEnum.FAIL.value))
+            else:
+                copy_build_packages(pkgbuild)
+                build_results.append(BuildResult(pkgname, ResultEnum.OK.value))
+    
+    for result in build_results:
+        print(result)
