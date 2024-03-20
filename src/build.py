@@ -1,17 +1,23 @@
+import fnmatch
 import os
 import shutil
 import subprocess
-import fnmatch
-from .config import C, BASE_PATH
-from .utils import *
-from .model import BuildResult, ResultEnum
 
-makepkg_path = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(__file__))), "makepkg_root")
-makepkg_config_path = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(__file__))), "makepkg.conf")
+from .config import BASE_PATH, C
+from .model import BuildResult, ResultEnum
+from .utils import get_repository_db_name, get_repository_path
+
+makepkg_path = os.path.join(
+    os.path.abspath(os.path.dirname(os.path.dirname(__file__))), "makepkg_root"
+)
+makepkg_config_path = os.path.join(
+    os.path.abspath(os.path.dirname(os.path.dirname(__file__))), "makepkg.conf"
+)
 print(f"!!!makepkg_path: {makepkg_path}")
 print(f"!!!makepkg_config_path: {makepkg_config_path}")
 _db_pkgs = []
 build_results = []
+
 
 def list_pkgbuilds():
     container_path = os.path.join(BASE_PATH, C.pkgbuilds.container)
@@ -19,29 +25,36 @@ def list_pkgbuilds():
         return []
     return os.listdir(container_path)
 
+
 def list_pkgbuilds_dir():
     container_path = os.path.join(BASE_PATH, C.pkgbuilds.container)
     if not os.path.exists(container_path):
         return []
     # pkgbuilds_paths = list(
-    #     map(lambda path: os.path.join(BASE_PATH, path), 
+    #     map(lambda path: os.path.join(BASE_PATH, path),
     #         os.listdir(container_path))
     #     )
     # print(pkgbuilds_paths)
 
     # print(glob(os.path.join(container_path, "*", ""), recursive = False))
 
-    subfolders = [ f.path for f in os.scandir(container_path) if f.is_dir() ]
+    subfolders = [f.path for f in os.scandir(container_path) if f.is_dir()]
     # print(subfolders)
     return subfolders
+
 
 def list_aurs_dir():
     container_path = os.path.join(BASE_PATH, C.aurs.container)
     # subfolders = [ f.path for f in os.scandir(container_path) if f.is_dir() ]
 
     # use config to follow build order
-    subfolders = [ os.path.join(container_path, f) for f in C.aurs.packages if os.path.exists(os.path.join(container_path, f)) ]
+    subfolders = [
+        os.path.join(container_path, f)
+        for f in C.aurs.packages
+        if os.path.exists(os.path.join(container_path, f))
+    ]
     return subfolders
+
 
 def clone_aur_packages():
     for aur in C.aurs.packages:
@@ -54,20 +67,21 @@ def clone_aur_packages():
         if not os.path.exists(os.path.join(container, aur)):
             subprocess.run(["git", "clone", "--depth=1", url], cwd=container)
 
+
 def copy_build_packages(path):
     package_name = ""
     package_full_path = ""
 
     files = os.listdir(path)
-    matched_pkgs = [f for f in files if fnmatch.fnmatch(f, "*.pkg.tar.zst") ]
+    matched_pkgs = [f for f in files if fnmatch.fnmatch(f, "*.pkg.tar.zst")]
     sorted_pkgs = sorted(matched_pkgs, reverse=True)
-    
+
     if not sorted_pkgs:
         print(f"!!!{os.path.basename(path)} build failed!")
     else:
         package_name = sorted_pkgs[0]
         package_full_path = os.path.join(path, sorted_pkgs[0])
-    
+
     repo_path = get_repository_path(C.global_settings.repository)
 
     os.makedirs(repo_path, exist_ok=True)
@@ -78,10 +92,16 @@ def copy_build_packages(path):
         return
 
     subprocess.run(
-        ["repo-add", "--new", "--remove", get_repository_db_name(C.global_settings.repository), package_name], 
-        cwd=repo_path
-        )
-    
+        [
+            "repo-add",
+            "--new",
+            "--remove",
+            get_repository_db_name(C.global_settings.repository),
+            package_name,
+        ],
+        cwd=repo_path,
+    )
+
 
 def rebuild(pkgname):
     if pkgname in list_pkgbuilds():
@@ -90,8 +110,11 @@ def rebuild(pkgname):
         rebuild_dir = os.path.join(BASE_PATH, C.aurs.container, pkgname)
     else:
         raise RuntimeError("Rebuild package requested not exist!")
-    
-    subprocess.run(["pkgctl", "build", "-w", "1", "--clean", "--rebuild"], cwd=rebuild_dir)
+
+    subprocess.run(
+        ["pkgctl", "build", "-w", "1", "--clean", "--rebuild"], cwd=rebuild_dir
+    )
+
 
 def get_db_pkg_list():
     global _db_pkgs
@@ -99,36 +122,41 @@ def get_db_pkg_list():
         repo_db = os.path.join(BASE_PATH, C.global_settings.repository)
         if os.path.isfile(repo_db):
             result = subprocess.run(
-                "tar --exclude='*/*' -tf " + repo_db, 
-                check=True, stdout=subprocess.PIPE, shell=True
-                ).stdout.decode("utf-8")
-        _db_pkgs = [ f[:-1] for f in result.split("\n") if f != "" ]
-        print(f"!!!packages in db:\n{_db_pkgs}")
+                "tar --exclude='*/*' -tf " + repo_db,
+                check=True,
+                stdout=subprocess.PIPE,
+                shell=True,
+            ).stdout.decode("utf-8")
+            _db_pkgs = [f[:-1] for f in result.split("\n") if f != ""]
+            print(f"!!!packages in db:\n{_db_pkgs}")
     return _db_pkgs
 
+
 def install_package_from_db(pkgname):
-    subprocess.run(["pacman", "-U", "--noconfirm", pkgname], cwd=get_repository_path(C.global_settings.repository))
+    subprocess.run(
+        ["pacman", "-U", "--noconfirm", pkgname],
+        cwd=get_repository_path(C.global_settings.repository),
+    )
+
 
 def is_package_exist_in_db(pkgbuild):
-
     # for git packages, update pkgver first
     if fnmatch.fnmatch(pkgbuild, "*-git"):
         subprocess.run([makepkg_path, "-o", "-d"], cwd=pkgbuild)
 
     # extract package basename from PKGBUILD
     result = subprocess.run(
-        [makepkg_path, "--config", makepkg_config_path, "--packagelist"], 
-        check=True, stdout=subprocess.PIPE, cwd=pkgbuild
-        ).stdout.decode("utf-8")
-    pkg = '-'.join(
-        (os.path.splitext(os.path.basename(result))[0].split('-'))[:-1]
-        )
+        [makepkg_path, "--config", makepkg_config_path, "--packagelist"],
+        check=True,
+        stdout=subprocess.PIPE,
+        cwd=pkgbuild,
+    ).stdout.decode("utf-8")
+    pkg = "-".join((os.path.splitext(os.path.basename(result))[0].split("-"))[:-1])
 
     print(f"!!!{pkg} read from PKGBUILD")
 
     # compare package basename to database
     if pkg in get_db_pkg_list():
-
         # if package exists in db, install it to meet dependency
         pkgname = os.path.basename(result).strip()
         install_package_from_db(pkgname)
@@ -137,12 +165,19 @@ def is_package_exist_in_db(pkgbuild):
 
     return False
 
+
 def is_package_been_built(pkgbuild):
-    result = subprocess.run(
-    [makepkg_path, "--packagelist"], 
-    check=True, stdout=subprocess.PIPE, cwd=pkgbuild
-    ).stdout.decode("utf-8").strip()
-    
+    result = (
+        subprocess.run(
+            [makepkg_path, "--packagelist"],
+            check=True,
+            stdout=subprocess.PIPE,
+            cwd=pkgbuild,
+        )
+        .stdout.decode("utf-8")
+        .strip()
+    )
+
     if os.path.isfile(result):
         return True
     else:
@@ -155,7 +190,7 @@ def makepkg():
     for pkgbuild in packages_list:
         pkgname = os.path.basename(pkgbuild)
         print(f"!!!Start build packages {pkgname}")
-        
+
         if is_package_exist_in_db(pkgbuild):
             print(f"!!!{pkgname} skipped build and copy!")
             build_results.append(BuildResult(pkgname, ResultEnum.SKIP.value))
@@ -168,13 +203,24 @@ def makepkg():
         else:
             # subprocess.run(["pkgctl", "build", "-w", "1", "--clean"], cwd=pkgbuild)
             # subprocess.run(["paru", "--build", "--chroot", "--skipreview", "--clean"], cwd=pkgbuild)
-            result = subprocess.run([makepkg_path, "--config", makepkg_config_path, "--syncdeps", "--clean", "--noconfirm", "--install"], cwd=pkgbuild)
-            if (result.returncode):
+            result = subprocess.run(
+                [
+                    makepkg_path,
+                    "--config",
+                    makepkg_config_path,
+                    "--syncdeps",
+                    "--clean",
+                    "--noconfirm",
+                    "--install",
+                ],
+                cwd=pkgbuild,
+            )
+            if result.returncode:
                 # return non 0, failed
                 build_results.append(BuildResult(pkgname, ResultEnum.FAIL.value))
             else:
                 copy_build_packages(pkgbuild)
                 build_results.append(BuildResult(pkgname, ResultEnum.OK.value))
-    
+
     for result in build_results:
         print(result)
