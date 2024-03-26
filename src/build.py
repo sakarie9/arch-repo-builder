@@ -15,57 +15,45 @@ makepkg_config_path = os.path.join(
 )
 print(f"!!!makepkg_path: {makepkg_path}")
 print(f"!!!makepkg_config_path: {makepkg_config_path}")
+
+pkgbuilds_container_path = os.path.join(BASE_PATH, C.pkgbuilds.container)
+aurs_container_path = os.path.join(BASE_PATH, C.aurs.container)
+
 _db_pkgs = []
 build_results = []
 
 
-def list_pkgbuilds():
-    container_path = os.path.join(BASE_PATH, C.pkgbuilds.container)
-    if not os.path.exists(container_path):
+def list_pkgbuilds_pkgname():
+    if not os.path.exists(pkgbuilds_container_path):
         return []
-    return os.listdir(container_path)
+    return os.listdir(pkgbuilds_container_path)
 
 
-def list_pkgbuilds_dir():
-    container_path = os.path.join(BASE_PATH, C.pkgbuilds.container)
-    if not os.path.exists(container_path):
+def list_pkgbuilds_path():
+    if not os.path.exists(pkgbuilds_container_path):
         return []
-    # pkgbuilds_paths = list(
-    #     map(lambda path: os.path.join(BASE_PATH, path),
-    #         os.listdir(container_path))
-    #     )
-    # print(pkgbuilds_paths)
-
-    # print(glob(os.path.join(container_path, "*", ""), recursive = False))
-
-    subfolders = [f.path for f in os.scandir(container_path) if f.is_dir()]
-    # print(subfolders)
+    subfolders = [f.path for f in os.scandir(pkgbuilds_container_path) if f.is_dir()]
     return subfolders
 
 
-def list_aurs_dir():
-    container_path = os.path.join(BASE_PATH, C.aurs.container)
-    # subfolders = [ f.path for f in os.scandir(container_path) if f.is_dir() ]
-
-    # use config to follow build order
+def list_aurs_path():
     subfolders = [
-        os.path.join(container_path, f)
+        os.path.join(aurs_container_path, f)
         for f in C.aurs.packages
-        if os.path.exists(os.path.join(container_path, f))
+        if os.path.exists(os.path.join(aurs_container_path, f))
     ]
     return subfolders
 
 
 def clone_aur_packages():
     for aur in C.aurs.packages:
-        container = os.path.join(BASE_PATH, C.aurs.container)
         url = f"https://aur.archlinux.org/{aur}.git"
 
-        if not os.path.exists(container):
-            os.makedirs(container)
+        if not os.path.exists(aurs_container_path):
+            os.makedirs(aurs_container_path)
 
-        if not os.path.exists(os.path.join(container, aur)):
-            subprocess.run(["git", "clone", "--depth=1", url], cwd=container)
+        if not os.path.exists(os.path.join(aurs_container_path, aur)):
+            subprocess.run(["git", "clone", "--depth=1", url], cwd=aurs_container_path)
 
 
 def copy_build_packages(path):
@@ -104,10 +92,10 @@ def copy_build_packages(path):
 
 
 def rebuild(pkgname):
-    if pkgname in list_pkgbuilds():
-        rebuild_dir = os.path.join(BASE_PATH, C.pkgbuilds.container, pkgname)
+    if pkgname in list_pkgbuilds_pkgname():
+        rebuild_dir = os.path.join(pkgbuilds_container_path, pkgname)
     elif pkgname in C.aurs.packages:
-        rebuild_dir = os.path.join(BASE_PATH, C.aurs.container, pkgname)
+        rebuild_dir = os.path.join(aurs_container_path, pkgname)
     else:
         raise RuntimeError("Rebuild package requested not exist!")
 
@@ -185,7 +173,7 @@ def is_package_been_built(pkgbuild):
 
 
 def makepkg():
-    packages_list = list_pkgbuilds_dir() + list_aurs_dir()
+    packages_list = list_pkgbuilds_path() + list_aurs_path()
     print(f"!!!Packages\n{packages_list}")
     for pkgbuild in packages_list:
         pkgname = os.path.basename(pkgbuild)
