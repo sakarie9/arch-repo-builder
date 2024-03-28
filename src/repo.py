@@ -20,7 +20,7 @@ def refresh_local_repo():
 def add_local_repo():
     if os.path.exists(repo_db_path):
         _pacman_append = f"""
-[local]
+[arch-repo-builder]
 SigLevel = Optional
 Server = file://{repo_dir}
 """
