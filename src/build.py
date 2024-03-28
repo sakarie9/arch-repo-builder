@@ -6,6 +6,7 @@ import subprocess
 from .config import BASE_PATH, C
 from .model import BuildResult, ResultEnum
 from .utils import get_repository_db_name, get_repository_path
+from .repo import refresh_local_repo
 
 makepkg_path = os.path.join(
     os.path.abspath(os.path.dirname(os.path.dirname(__file__))), "makepkg_root"
@@ -199,7 +200,6 @@ def makepkg():
                     "--syncdeps",
                     "--clean",
                     "--noconfirm",
-                    "--install",
                 ],
                 cwd=pkgbuild,
             )
@@ -209,6 +209,9 @@ def makepkg():
             else:
                 copy_build_packages(pkgbuild)
                 build_results.append(BuildResult(pkgname, ResultEnum.OK.value))
+
+        # Refresh Local Repo after every build
+        refresh_local_repo()
 
     for result in build_results:
         print(result)
