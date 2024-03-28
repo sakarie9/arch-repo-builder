@@ -29,4 +29,8 @@ def add_local_repo():
             f.write(_pacman_append)
             f.close()
 
+        with open(pacman_conf_path, "r") as f:
+            print("!!!pacman.conf")
+            print(f.read())
+
         refresh_local_repo()
