@@ -20,10 +20,10 @@ def refresh_local_repo():
 def add_local_repo():
     if os.path.exists(repo_db_path):
         _pacman_append = f"""
-        [local]
-        SigLevel = Optional
-        Server = file:///{repo_dir}
-        """
+[local]
+SigLevel = Optional
+Server = file://{repo_dir}
+"""
 
         with open(pacman_conf_path, "a") as f:
             f.write(_pacman_append)
