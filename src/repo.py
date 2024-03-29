@@ -5,7 +5,7 @@ from .config import BASE_PATH, C
 
 repo_db_path = os.path.join(BASE_PATH, C.global_settings.repository)
 repo_dir = os.path.dirname(repo_db_path)
-repo_name = os.path.basename(C.global_settings.repository)
+repo_name = (C.global_settings.repository).split('/')[-1].split('.')[0]
 
 pacman_conf_path = "/etc/pacman.conf"
 
