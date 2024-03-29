@@ -2,7 +2,8 @@ import os
 import subprocess
 from .config import BASE_PATH, C
 
-repo_db_path = os.path.join(BASE_PATH, C.global_settings.repository)
+db_workspace = os.getenv('GITHUB_WORKSPACE') if os.getenv('GITHUB_WORKSPACE') else BASE_PATH
+repo_db_path = os.path.join(db_workspace, C.global_settings.repository)
 repo_dir = os.path.dirname(repo_db_path)
 
 pacman_conf_path = "/etc/pacman.conf"
