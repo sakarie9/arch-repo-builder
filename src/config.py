@@ -1,11 +1,10 @@
 import os
-import sys
 from dataclasses import dataclass, field
 from typing import List
 
 import yaml
 
-BASE_PATH = sys.argv[1] if (len(sys.argv) - 1) else os.getcwd()
+BASE_PATH = os.getcwd()
 CONFIG_PATH = os.path.join(BASE_PATH, "config.yaml")
 
 

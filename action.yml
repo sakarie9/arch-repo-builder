@@ -1,8 +1,8 @@
 name: Arch Repo Builder
 description: Build Arch Linux packages from PKGBUILDs and AUR
 inputs:
-  working-directory:
-    description: 'working directory'
+  db-working-directory:
+    description: 'database working directory'
 runs:
   using: docker
   image: Dockerfile
