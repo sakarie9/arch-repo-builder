@@ -218,11 +218,7 @@ def makepkg():
 
     for result in build_results:
         print(result)
-    
-    subprocess.run(
-        ["realpath", "~/.cache/ccache"]
-    )
 
     subprocess.run(
-        ["ls", "-la", "~/.cache/ccache"]
+        ["ccache", "-s"]
     )
