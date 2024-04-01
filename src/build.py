@@ -201,7 +201,7 @@ def makepkg():
                     "--config",
                     makepkg_config_path,
                     "--syncdeps",
-                    "--clean",
+                    # "--clean",
                     "--noconfirm",
                 ],
                 cwd=pkgbuild,
