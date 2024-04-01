@@ -1,6 +1,6 @@
 FROM archlinux:multilib-devel
 
-RUN pacman -Syu --noconfirm git python python-yaml
+RUN pacman -Syu --noconfirm git python python-yaml ccache
 
 WORKDIR /app
 ENV PYTHONPATH "${PYTHONPATH}:/app/"
