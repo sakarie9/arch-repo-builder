@@ -20,6 +20,9 @@ print(f"!!!makepkg_config_path: {makepkg_config_path}")
 pkgbuilds_container_path = os.path.join(BASE_PATH, C.pkgbuilds.container)
 aurs_container_path = os.path.join(BASE_PATH, C.aurs.container)
 
+# Set ccache path to BASE_PATH/ccache
+os.environ["CCACHE_DIR"] = os.path.join(BASE_PATH, "ccache")
+
 _db_pkgs = []
 build_results = []
 
