@@ -65,14 +65,13 @@ def copy_build_packages(path):
     package_full_path = ""
 
     files = os.listdir(path)
-    matched_pkgs = [f for f in files if fnmatch.fnmatch(f, "*.pkg.tar.zst")]
-    sorted_pkgs = sorted(matched_pkgs, reverse=True)
+    matched_pkgs = [f for f in files if fnmatch.fnmatch(f, "*.pkg.tar.zst") and "-debug" not in f]
 
-    if not sorted_pkgs:
+    if not matched_pkgs:
         print(f"!!!{os.path.basename(path)} build failed!")
     else:
-        package_name = sorted_pkgs[0]
-        package_full_path = os.path.join(path, sorted_pkgs[0])
+        package_name = matched_pkgs[0]
+        package_full_path = os.path.join(path, matched_pkgs[0])
 
     repo_path = get_repository_path(C.global_settings.repository)
 
