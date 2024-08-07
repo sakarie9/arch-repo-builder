@@ -1,7 +1,7 @@
 FROM archlinux:multilib-devel
 
 RUN pacman-key --init && \
-  echo "[archlinuxcn]\nServer = https://repo.archlinuxcn.org/\$arch\n" >> /etc/pacman.conf && \
+  printf "[archlinuxcn]\nServer = https://repo.archlinuxcn.org/\$arch\n" >> /etc/pacman.conf && \
   pacman -Syu --noconfirm git python python-yaml ccache archlinuxcn-keyring
 
 WORKDIR /app
